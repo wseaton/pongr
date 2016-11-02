@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Match</title>
+</head>
+
+<br>
+<body>
+<form method="POST" action="/record_match">
+   {{form.player_a(size=20)}} {{ form.player_a.label}}
+  <br>
+   {{form.player_b(size=20)}} {{ form.player_b.label}}
+  <br>
+   {{form.score_a(size=20)}} {{ form.score_a.label}}
+  <br>
+   {{form.score_b(size=20)}} {{ form.score_b.label}}
+  <br>
+  <input type="submit" value="Submit Match"></input>
+</form>
+
+</body>
+
+
+</html>
