@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect
+from flask import Flask, render_template, redirect, flash
 from flask_restless import APIManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
@@ -19,6 +19,7 @@ def create_app():
     return app
 
 app = create_app()
+app.secret_key = 'supersecret'
 db = SQLAlchemy(app)
 
 class Game(db.Model):
@@ -37,6 +38,15 @@ api_manager.create_api(Game, methods=['GET', 'POST', 'DELETE', 'PUT'])
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 metadata = MetaData(bind=engine)
 
+def flash_errors(form):
+    for field, errors in form.errors.items():
+        for error in errors:
+            flash(u"Error in the %s field - %s" % (
+                getattr(form, field).label.text,
+                error
+            ))
+
+
 @app.route('/')
 def homepage():
     paragraph = '''
@@ -46,12 +56,12 @@ def homepage():
     return render_template("index.html", paragraph=paragraph)
 
 
-
 @app.route('/games', methods=['GET'])
 def matches():
     df = pd.read_sql('select * from game', con=engine)
     df = df.to_dict('records')
     return render_template('gamelog.html', games=df)
+
 
 @app.route('/record_match', methods=['GET', 'POST'])
 def record_match():
@@ -63,14 +73,17 @@ def record_match():
         db.session.add(record)
         db.session.commit()
         return redirect('/games')
-
+    else:
+        flash_errors(form)
     return render_template('addmatch.html', form=form)
+
 
 @app.route('/ratings', methods=['GET'])
 def ratings():
     games = pd.read_sql('select * from game', con=engine)
+    all_players = set(list(games.player_a.unique()) + list(games.player_b.unique()))
 
-    ratings = {k :Rating() for k in games.player_a.unique()}
+    ratings = {k :Rating() for k in all_players}
 
     for row in games.iterrows():
         if row[1]['score_a'] > row[1]['score_b']:
@@ -95,8 +108,6 @@ def ratings():
     ratingdf = ratingdf.to_dict('records')
 
     return render_template('ratings.html', data=ratingdf)
-
-
 
 
 if __name__ == '__main__':
