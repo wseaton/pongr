@@ -1,14 +1,15 @@
-from flask import Flask, render_template
-from flask.ext.restless import APIManager
-from flask.ext.sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField
-from wtforms.validators import DataRequired
+from flask import Flask, render_template, redirect
+from flask_restless import APIManager
+from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 
+from app.form import MatchForm
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData
+from trueskill import Rating, quality_1vs1, rate_1vs1
+
 import pandas as pd
 import time
+
 
 def create_app():
     app = Flask(__name__, static_url_path='')
@@ -33,20 +34,24 @@ db.create_all()
 api_manager = APIManager(app, flask_sqlalchemy_db=db)
 api_manager.create_api(Game, methods=['GET', 'POST', 'DELETE', 'PUT'])
 
-class MatchForm(FlaskForm):
-    player_a = StringField('player_a', validators=[DataRequired()])
-    player_b = StringField('player_b', validators=[DataRequired()])
-    score_a = IntegerField('score_a', validators=[DataRequired()])
-    score_b = IntegerField('score_b', validators=[DataRequired()])
-
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 metadata = MetaData(bind=engine)
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/')
+def homepage():
+    paragraph = '''
+    This is a page to track all of of the office Ping Pong games, and then calculate
+    player ratings using TrueSkill. Please contact Will Eaton if you would like features added.
+    '''
+    return render_template("index.html", paragraph=paragraph)
+
+
+
+@app.route('/games', methods=['GET'])
 def matches():
     df = pd.read_sql('select * from game', con=engine)
     df = df.to_dict('records')
-    return render_template('index.html', games=df)
+    return render_template('gamelog.html', games=df)
 
 @app.route('/record_match', methods=['GET', 'POST'])
 def record_match():
@@ -57,9 +62,41 @@ def record_match():
                       timestamp=time.time())
         db.session.add(record)
         db.session.commit()
-        return 'success! your match was uploaded.'
+        return redirect('/games')
 
     return render_template('addmatch.html', form=form)
+
+@app.route('/ratings', methods=['GET'])
+def ratings():
+    games = pd.read_sql('select * from game', con=engine)
+
+    ratings = {k :Rating() for k in games.player_a.unique()}
+
+    for row in games.iterrows():
+        if row[1]['score_a'] > row[1]['score_b']:
+            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
+                ratings[row[1]['player_a']], ratings[row[1]['player_b']])
+        elif row[1]['score_a'] < row[1]['score_b']:
+            ratings[row[1]['player_b']], ratings[row[1]['player_a']] = rate_1vs1(
+                ratings[row[1]['player_b']], ratings[row[1]['player_a']])
+        else:
+            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
+                ratings[row[1]['player_a']], ratings[row[1]['player_b']], drawn=True)
+
+    ratingdf = pd.DataFrame()
+    for k, v in ratings.iteritems():
+        ratingdf.loc[k, 'Rating'] = v.mu
+        ratingdf.loc[k, 'Sigma'] = v.sigma
+        ratingdf.loc[k, 'Tau'] = v.tau
+        ratingdf.loc[k, 'Pi'] = v.pi
+        ratingdf.loc[k, 'Exposure'] = v.exposure
+
+    ratingdf.reset_index(inplace=True)
+    ratingdf = ratingdf.to_dict('records')
+
+    return render_template('ratings.html', data=ratingdf)
+
+
 
 
 if __name__ == '__main__':

@@ -1,68 +1,13 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Game Tracker</title>
-</head>
+{% extends "layout.html" %}
+{% block content %}
 
-<link  rel="stylesheet" type="text/css" href = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-<link  rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css">
-<link  rel="stylesheet" type="text/css" href = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css">
-
-<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
-<script type="text/javascript" language = "javascript" src = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language = "javascript" src = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<div class="row">
+  <div class="col-md-6 col-md-offset-3">
+    <p>
+      {{ paragraph }}
+    </p>
+  </div>
+</div>
 
 
-
-
-<h3>Pong Scores</h3>
-
-
-
-
-<br>
-<body>
-<p>
-  <b><a href="/record_match">Add Match Here!</a> </b><br>
-</p>
-  <table class = 'table table-striped' id ='fine' align = 'left'>
-
-  			<thead>
-  				<tr>
-  					<th> Game ID </th>
-  					<th> Player A </th>
-  					<th> Score  </th>
-  					<th> Player B </th>
-  					<th> Score </th>
-  					<th> Timestamp </th>
-
-  				</tr>
-  			</thead>
-  			<tbody>
-  				{% for item in games %}
-  				<tr>
-            <td> {{item['id']}}  </td>
-  					<td> {{item['player_a']}}  </td>
-  					<td> {{item['score_a']}}  </td>
-  					<td> {{item['player_b']}} </td>
-  					<td> {{item['score_b']}}  </td>
-  					<td> {{item['timestamp']}}  </td>
-
-
-  				</tr>
-  				{% endfor %}
-  			</tbody>
-  		</table>
-
-
-</body>
-
-<script type="text/javascript">
-
-$(document).ready( function () {
-    $('#fine').DataTable();
-} );
-
-</script>
-</html>
+{% endblock %}

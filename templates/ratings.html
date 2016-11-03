@@ -1,0 +1,58 @@
+{% extends "layout.html" %}
+{% block content %}
+<html>
+<head>
+</head>
+
+<link  rel="stylesheet" type="text/css" href = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link  rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css">
+<link  rel="stylesheet" type="text/css" href = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css">
+
+<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+<script type="text/javascript" language = "javascript" src = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+<script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language = "javascript" src = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+
+<br>
+<body>
+  <table class = 'table table-striped' id ='fine' align = 'left'>
+
+  			<thead>
+  				<tr>
+            <th> Player </th>
+  					<th> Rating </th>
+  					<th> Sigma </th>
+  					<th> Tau  </th>
+  					<th> Pi </th>
+  					<th> Exposure </th>
+
+
+  				</tr>
+  			</thead>
+  			<tbody>
+  				{% for item in data %}
+  				<tr>
+            <td> {{item['index']}}  </td>
+            <td> {{item['Rating']}}  </td>
+  					<td> {{item['Sigma']}}  </td>
+  					<td> {{item['Tau']}}  </td>
+  					<td> {{item['Pi']}} </td>
+  					<td> {{item['Exposure']}}  </td>
+
+  				</tr>
+  				{% endfor %}
+  			</tbody>
+  		</table>
+
+
+</body>
+
+<script type="text/javascript">
+
+$(document).ready( function () {
+    $('#fine').DataTable();
+} );
+
+</script>
+</html>
+{% endblock %}
