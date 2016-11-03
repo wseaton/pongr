@@ -9,8 +9,8 @@
 <form method="POST" action="/record_match">
   {% for field in form %}
    {% if field.name is not equalto 'csrf_token' %}
+    {{field.label}}
      {{field(size=20)}}
-     {{field.label}}
    {% endif %}
   <br>
   {% endfor %}
