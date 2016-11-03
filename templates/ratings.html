@@ -20,11 +20,9 @@
   			<thead>
   				<tr>
             <th> Player </th>
-  					<th> Rating </th>
-  					<th> Sigma </th>
-  					<th> Tau  </th>
-  					<th> Pi </th>
-  					<th> Exposure </th>
+  					<th> Rating (&mu;) </th>
+  					<th> &sigma; </th>
+  					<th> TrueSkill (&mu;-3&sigma;)</th>
 
 
   				</tr>
@@ -35,9 +33,7 @@
             <td> {{item['index']}}  </td>
             <td> {{item['Rating']}}  </td>
   					<td> {{item['Sigma']}}  </td>
-  					<td> {{item['Tau']}}  </td>
-  					<td> {{item['Pi']}} </td>
-  					<td> {{item['Exposure']}}  </td>
+  					<td> {{item['TrueSkill']}}  </td>
 
   				</tr>
   				{% endfor %}

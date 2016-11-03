@@ -4,6 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 
 from app.form import MatchForm
+from app.utils import remove_whitespace, flash_errors
+
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData
 from trueskill import Rating, quality_1vs1, rate_1vs1
 
@@ -37,14 +39,6 @@ api_manager.create_api(Game, methods=['GET', 'POST', 'DELETE', 'PUT'])
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 metadata = MetaData(bind=engine)
-
-def flash_errors(form):
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash(u"Error in the %s field - %s" % (
-                getattr(form, field).label.text,
-                error
-            ))
 
 
 @app.route('/')
@@ -81,6 +75,10 @@ def record_match():
 @app.route('/ratings', methods=['GET'])
 def ratings():
     games = pd.read_sql('select * from game', con=engine)
+
+    games.player_a = games.player_a.apply(remove_whitespace)
+    games.player_b = games.player_b.apply(remove_whitespace)
+
     all_players = set(list(games.player_a.unique()) + list(games.player_b.unique()))
 
     ratings = {k :Rating() for k in all_players}
@@ -100,9 +98,7 @@ def ratings():
     for k, v in ratings.iteritems():
         ratingdf.loc[k, 'Rating'] = v.mu
         ratingdf.loc[k, 'Sigma'] = v.sigma
-        ratingdf.loc[k, 'Tau'] = v.tau
-        ratingdf.loc[k, 'Pi'] = v.pi
-        ratingdf.loc[k, 'Exposure'] = v.exposure
+        ratingdf.loc[k, 'TrueSkill'] = v.exposure
 
     ratingdf.reset_index(inplace=True)
     ratingdf = ratingdf.to_dict('records')
