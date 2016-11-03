@@ -40,7 +40,7 @@ metadata = MetaData(bind=engine)
 @app.route('/')
 def homepage():
     paragraph = '''
-    This is a page to track all of of the office Ping Pong games, and then calculate
+    This is an app to track Ping Pong games, and then calculate
     player ratings using TrueSkill. Please contact Will Eaton if you would like features added.
     '''
     return render_template("index.html", paragraph=paragraph)

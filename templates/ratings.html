@@ -50,7 +50,11 @@
 <script type="text/javascript">
 
 $(document).ready( function () {
-    $('#fine').DataTable();
+    $('#fine').DataTable({
+      "paging":false,
+      "info":false,
+      "order":[[1, "desc"]]
+    });
 } );
 
 </script>

@@ -50,8 +50,12 @@
 <script type="text/javascript">
 
 $(document).ready( function () {
-    $('#fine').DataTable();
+    $('#fine').DataTable({
+      "info":false,
+      "order":[[0, "desc"]]
+    });
 } );
+
 
 </script>
 </html>
