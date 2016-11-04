@@ -14,33 +14,37 @@
    {% endif %}
   <br>
   {% endfor %} -->
+  <div class="col-xs-2">
+    <div class="form-group">
+        <label for="PlayerA">Player 1</label>
+        <input type="text" name="player_a" class="form-control" id="player_a">
+      </div>
+      <div class="form-group">
+        <label for="PlayerAScore">Score</label>
+        <input type="text" name="score_a" class="form-control" id="score_a">
+      </div>
+      <div class="form-group">
+        <label for="PlayerB">Player 2</label>
+        <input type="text" name="player_b" class="form-control" id="player_b">
+        <!-- <p class="help-block">Example block-level help text here.</p> -->
+      </div>
+      <div class="form-group">
+        <label for="PlayerBScore">Score</label>
+        <input type="text" name="score_b" class="form-control" id="score_b">
+      </div>
+      <div class="form-group">
+        <input type="submit" class="btn btn-warning" value="Submit Match"></input>
+      </div>
+    </div>
 
-  <div class="form-group">
-      <label for="PlayerA">Player 1</label>
-      <input type="text" name="player_a" class="form-control" id="player_a">
-    </div>
-    <div class="form-group">
-      <label for="PlayerAScore">Score</label>
-      <input type="text" name="score_a" class="form-control" id="score_a">
-    </div>
-    <div class="form-group">
-      <label for="PlayerB">Player 2</label>
-      <input type="text" name="player_b" class="form-control" id="player_b">
-      <!-- <p class="help-block">Example block-level help text here.</p> -->
-    </div>
-    <div class="form-group">
-      <label for="PlayerBScore">Score</label>
-      <input type="text" name="score_b" class="form-control" id="score_b">
-    </div>
     <!-- <div class="checkbox">
       <label>
         <input type="checkbox"> Check me out
       </label>
     </div> -->
-  <input type="submit" class="btn btn-warning" value="Submit Match"></input>
+
 </form>
 </body>
-
 
 </html>
 
