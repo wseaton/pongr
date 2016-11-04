@@ -7,14 +7,37 @@
 <br>
 <body>
 <form method="POST" action="/record_match">
-  {% for field in form %}
+  <!-- {% for field in form %}
    {% if field.name is not equalto 'csrf_token' %}
     {{field.label}}
      {{field(size=20)}}
    {% endif %}
   <br>
-  {% endfor %}
-  <input type="submit" value="Submit Match"></input>
+  {% endfor %} -->
+
+  <div class="form-group">
+      <label for="PlayerA">Player 1</label>
+      <input type="text" class="form-control" id="player_a">
+    </div>
+    <div class="form-group">
+      <label for="PlayerAScore">Score</label>
+      <input type="text" class="form-control" id="score_a">
+    </div>
+    <div class="form-group">
+      <label for="PlayerB">Player 2</label>
+      <input type="text" class="form-control" id="player_b">
+      <!-- <p class="help-block">Example block-level help text here.</p> -->
+    </div>
+    <div class="form-group">
+      <label for="PlayerBScore">Score</label>
+      <input type="text" class="form-control" id="score_b">
+    </div>
+    <!-- <div class="checkbox">
+      <label>
+        <input type="checkbox"> Check me out
+      </label>
+    </div> -->
+  <input type="submit" class="btn btn-warning" value="Submit Match"></input>
 </form>
 </body>
 
