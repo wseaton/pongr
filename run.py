@@ -5,8 +5,9 @@ from flask_bootstrap import Bootstrap
 
 from app.form import MatchForm
 from app.utils import remove_whitespace, flash_errors
+from app.ratings import calculate_ratings
 
-from sqlalchemy import Column, Integer, Text, create_engine, MetaData
+from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float
 from trueskill import Rating, quality_1vs1, rate_1vs1
 
 import pandas as pd
@@ -31,6 +32,23 @@ class Game(db.Model):
     score_a = Column(Integer, unique=False)
     score_b = Column(Integer, unique=False)
     timestamp = Column(Integer, unique=False)
+
+
+class Player(db.Model):
+    player_id =  Column(Integer, primary_key=True)
+    first_name = Column(Text, unique=False)
+    last_name = Column(Text, unique=False)
+    alias = Column(Text, unique=True)
+
+
+class Ratings(db.Model):
+    alias = Column(Text, primary_key=True)
+    rating = Column(Float, unique=False)
+    sigma = Column(Float, unique=False)
+    tau = Column(Float, unique=False)
+    pi = Column(Float, unique=False)
+    trueskill = Column(Float, unique=False)
+
 
 db.create_all()
 
@@ -66,6 +84,9 @@ def record_match():
                       timestamp=time.time())
         db.session.add(record)
         db.session.commit()
+
+        push_new_ratings(con=engine)
+
         return redirect('/games')
     else:
         flash_errors(form)
@@ -74,36 +95,33 @@ def record_match():
 
 @app.route('/ratings', methods=['GET'])
 def ratings():
-    games = pd.read_sql('select * from game', con=engine)
-
-    games.player_a = games.player_a.apply(remove_whitespace)
-    games.player_b = games.player_b.apply(remove_whitespace)
-
-    all_players = set(list(games.player_a.unique()) + list(games.player_b.unique()))
-
-    ratings = {k :Rating() for k in all_players}
-
-    for row in games.iterrows():
-        if row[1]['score_a'] > row[1]['score_b']:
-            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
-                ratings[row[1]['player_a']], ratings[row[1]['player_b']])
-        elif row[1]['score_a'] < row[1]['score_b']:
-            ratings[row[1]['player_b']], ratings[row[1]['player_a']] = rate_1vs1(
-                ratings[row[1]['player_b']], ratings[row[1]['player_a']])
-        else:
-            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
-                ratings[row[1]['player_a']], ratings[row[1]['player_b']], drawn=True)
-
-    ratingdf = pd.DataFrame()
-    for k, v in ratings.iteritems():
-        ratingdf.loc[k, 'Rating'] = v.mu
-        ratingdf.loc[k, 'Sigma'] = v.sigma
-        ratingdf.loc[k, 'TrueSkill'] = v.exposure
-
-    ratingdf.reset_index(inplace=True)
+    ratingdf = pd.read_sql('select * from ratings', con=engine)
     ratingdf = ratingdf.to_dict('records')
 
     return render_template('ratings.html', data=ratingdf)
+
+
+@app.route('/delete/<game_id>', methods=['POST'])
+def delete_game(game_id):
+    Game.query.filter_by(id=game_id).delete()
+    db.session.commit()
+
+    push_new_ratings(con=engine)
+
+    return redirect('/games')
+
+
+def push_new_ratings(con=None):
+    '''
+    recalculates player ratings and pushes them to the database
+    '''
+    games = pd.read_sql('select * from game', con=con)
+
+    ratingdf = calculate_ratings(games)
+    ratingdf = (ratingdf.reset_index().rename(columns={'index':'alias'})
+                .drop('level_0', axis=1))
+
+    ratingdf.to_sql('ratings', con=con, if_exists='replace', index=False)
 
 
 if __name__ == '__main__':
