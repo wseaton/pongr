@@ -6,6 +6,7 @@ from flask_bootstrap import Bootstrap
 from app.form import MatchForm, PlayerForm
 from app.utils import remove_whitespace, flash_errors
 from app.ratings import calculate_ratings
+from app.plots import dist_plot
 
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float, Boolean
 from trueskill import Rating, quality_1vs1, rate_1vs1
@@ -141,9 +142,12 @@ def ratings():
     '''
 
     ratingdf = pd.read_sql(s, con=engine)
+    dist_plot_html = dist_plot(ratingdf)
+
     ratingdf = ratingdf.to_dict('records')
 
-    return render_template('ratings.html', data=ratingdf)
+    return render_template('ratings.html', data=ratingdf,
+                           dist_plot_html=dist_plot_html)
 
 
 @app.route('/delete/<game_id>', methods=['POST'])
