@@ -2,6 +2,8 @@
 {% block content %}
 <html>
 <head>
+
+
 </head>
 
 <link  rel="stylesheet" type="text/css" href = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
@@ -13,13 +15,31 @@
 <script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language = "javascript" src = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 
+
+
+
+
+
 <br>
 <body>
-  <table class = 'table table-striped' id ='fine' align = 'left'>
+<div class="span7 text-center">
+    <form action="/recalculate" method="post">
+      <button type="submit" class="btn btn-info">
+        <span class="glyphicon glyphicon-random" aria-hidden="true">
+        </span>
+          Refresh Ratings
+        </buttton>
+    </form>
+  </div>
+
+
+<div>
+  <table class = 'table table-striped table-bordered' width="90%" id='fine' align='center'>
 
   			<thead>
   				<tr>
-            <th> Player </th>
+            <th> First </th>
+            <th> Last </th>
   					<th> Rating (&mu;) </th>
   					<th> &sigma; </th>
   					<th> TrueSkill (&mu;-3&sigma;)</th>
@@ -30,7 +50,8 @@
   			<tbody>
   				{% for item in data %}
   				<tr>
-            <td> {{item['alias']}}  </td>
+            <td> {{item['first_name']}}  </td>
+            <td> {{item['last_name']}}  </td>
             <td> {{item['rating']}}  </td>
   					<td> {{item['sigma']}}  </td>
   					<td> {{item['trueskill']}}  </td>
@@ -40,7 +61,7 @@
   			</tbody>
   		</table>
 
-
+</dic>
 </body>
 
 <script type="text/javascript">
@@ -49,7 +70,7 @@ $(document).ready( function () {
     $('#fine').DataTable({
       "paging":false,
       "info":false,
-      "order":[[1, "desc"]]
+      "order":[[2, "desc"]]
     });
 } );
 

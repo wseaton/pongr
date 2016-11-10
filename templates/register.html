@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<html>
+
+<br>
+<body>
+<form method="POST" action="/register">
+
+  <div class="col-xs-2">
+      <div class="form-group">
+          <label for="PlayerA">Alias eg. 'weaton'</label>
+          <input type="text" name="alias" class="form-control" id="alias">
+        </div>
+        <div class="form-group">
+          <label for="PlayerAScore">First Name</label>
+          <input type="text" name="first_name" class="form-control" id="first_name">
+        </div>
+        <div class="form-group">
+          <label for="PlayerB">Last Name</label>
+          <input type="text" name="last_name" class="form-control" id="last_name">
+          <!-- <p class="help-block">Example block-level help text here.</p> -->
+        </div>
+        <div class="form-group">
+          <input type="submit" class="btn btn-info" value="Register Player"></input>
+        </div>
+      </div>
+
+</form>
+</body>
+
+</html>
+
+{% endblock %}
