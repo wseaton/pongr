@@ -142,12 +142,11 @@ def ratings():
     '''
 
     ratingdf = pd.read_sql(s, con=engine)
-    dist_plot_html = dist_plot(ratingdf)
+    chart = dist_plot(ratingdf)
 
     ratingdf = ratingdf.to_dict('records')
 
-    return render_template('ratings.html', data=ratingdf,
-                           dist_plot_html=dist_plot_html)
+    return render_template('ratings.html', data=ratingdf, chart=chart)
 
 
 @app.route('/delete/<game_id>', methods=['POST'])

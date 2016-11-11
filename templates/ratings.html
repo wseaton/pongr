@@ -14,6 +14,7 @@
 <script type="text/javascript" language = "javascript" src = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 <script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" language = "javascript" src = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
+<script type="text/javascript" language = "javascript" src = "//code.highcharts.com/highcharts.js"></script>
 
 
 
@@ -31,6 +32,7 @@
         </buttton>
     </form>
   </div>
+
 
 
 <div>
@@ -62,12 +64,13 @@
   		</table>
 
 </div>
+<br>
 
-<div class="span7 text-center">
+<div id="my-chart" style="width:80%"></div>
+<script type="text/javascript">
+  new Highcharts.Chart({{chart|safe}});
+</script>
 
-{{dist_plot_html | safe}}
-
-</div>
 
 </body>
 
