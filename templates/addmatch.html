@@ -34,7 +34,8 @@
     <div class="form-group">
         <label for="PlayerA">Player 1</label>
           <select id='player_a' class="form-control" name="player_a">
-          {% for choice in form.player_a.choices %}
+		  <option value="" selected disabled>Select</option>
+	  {% for choice in form.player_a.choices %}
             <option value='{{choice [0]}}'>{{ choice[1] }}</option>
           {% endfor %}
           </select>
@@ -51,7 +52,8 @@
       <div class="form-group">
         <label for="PlayerB">Player 2</label>
           <select id='player_b' class="form-control" name="player_b">
-          {% for choice in form.player_b.choices %}
+          	<option value="" selected disabled>Select</option>
+		  {% for choice in form.player_b.choices %}
             <option value='{{choice [0]}}'>{{ choice[1] }}</option>
           {% endfor %}
           </select>
