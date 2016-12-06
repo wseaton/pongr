@@ -9,7 +9,8 @@ def dist_plot(rating_df):
 
     data_dict = {}
     for row in rating_df.iterrows():
-        data_dict[row[1]['first_name']] = (x, mlab.normpdf(x, row[1]['rating'], row[1]['sigma']))
+        label_name = (row[1]['first_name'] + ' ' + row[1]['last_name'][0] + '.')
+        data_dict[label_name] = (x, mlab.normpdf(x, row[1]['rating'], row[1]['sigma']))
 
     final_df = pd.DataFrame()
 
