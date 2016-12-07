@@ -3,6 +3,8 @@ import numpy as np
 import pandas as pd
 import matplotlib.mlab as mlab
 from pandas_highcharts.core import serialize
+from io import BytesIO
+import seaborn as sns
 
 def dist_plot(rating_df):
     x = np.linspace(0, 50, 500)
@@ -21,3 +23,28 @@ def dist_plot(rating_df):
     final_df.set_index('index', inplace=True)
 
     return serialize(final_df, render_to='my-chart', title='', output_type="json")
+
+def win_probability_matrix(matrix_df):
+    '''returns a win probability matrix plot as bytecode'''
+    plt.style.use('ggplot')
+
+    f, ax = plt.subplots(figsize=(8, 7))
+    sns.heatmap(matrix_df, cmap=plt.cm.viridis_r, square=True,
+                cbar_kws={"shrink": .5, "label":"win pct (y)"}, ax=ax)
+
+    plt.title('Win Probability Matrix')
+    plt.xticks(rotation=90)
+    plt.yticks(rotation=0)
+    plt.xlabel('loser', fontsize=12)
+    plt.ylabel('winner', fontsize=12)
+
+    # We change the fontsize of minor ticks label
+    plt.tick_params(axis='both', which='major', labelsize=12)
+
+
+    byte = BytesIO()
+    plt.savefig(byte)
+    byte.seek(0)
+    import base64
+    figdata_png = base64.b64encode(byte.getvalue())
+    return figdata_png

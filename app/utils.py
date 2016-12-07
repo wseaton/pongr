@@ -1,4 +1,5 @@
 from flask import flash
+from trueskill import Rating
 
 def remove_whitespace(x):
     try:
@@ -14,3 +15,6 @@ def flash_errors(form):
                 getattr(form, field).label.text,
                 error
             ))
+
+def rating_df_to_dict(rating_df):
+    return {row[1]['alias']:Rating(row[1]['rating'], row[1]['sigma']) for row in rating_df.iterrows()}

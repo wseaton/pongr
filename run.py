@@ -4,16 +4,17 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 
 from app.form import MatchForm, PlayerForm
-from app.utils import remove_whitespace, flash_errors
-from app.ratings import calculate_ratings
-from app.plots import dist_plot
+from app.utils import remove_whitespace, flash_errors, rating_df_to_dict
+from app.ratings import calculate_ratings, win_probability
+from app.plots import dist_plot, win_probability_matrix
 
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float, Boolean
 from trueskill import Rating, quality_1vs1, rate_1vs1
 
 import pandas as pd
 import time
-
+import itertools
+import numpy as np
 
 def create_app():
     app = Flask(__name__, static_url_path='')
@@ -126,13 +127,13 @@ def register():
     return render_template('register.html')
 
 
-
 @app.route('/ratings', methods=['GET'])
 def ratings():
     s = '''
     select
         first_name,
         last_name,
+        alias,
         rating,
         sigma,
         trueskill
@@ -144,9 +145,22 @@ def ratings():
     ratingdf = pd.read_sql(s, con=engine)
     chart = dist_plot(ratingdf)
 
+    ratingdf_2 = ratingdf.copy()
     ratingdf = ratingdf.to_dict('records')
+    # top is for the datatable as records, bottom is TrueSkill objects
+    r_dict = rating_df_to_dict(ratingdf_2)
 
-    return render_template('ratings.html', data=ratingdf, chart=chart)
+    perc_df = pd.DataFrame()
+
+    for pair in list(itertools.combinations(r_dict, 2)):
+        prob = win_probability(r_dict[pair[0]], r_dict[pair[1]])
+        perc_df.loc[pair[0], pair[1]] = prob
+        perc_df.loc[pair[1], pair[0]] = 1 - prob
+
+    matrix = win_probability_matrix(perc_df)
+
+    return render_template('ratings.html', data=ratingdf,
+                           chart=chart, matrix=matrix.decode('utf8'))
 
 
 @app.route('/delete/<game_id>', methods=['POST'])
@@ -165,6 +179,7 @@ def recalculate():
     push_new_ratings(con=engine)
 
     return redirect('/ratings')
+
 
 
 def push_new_ratings(con=None):
