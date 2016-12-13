@@ -29,10 +29,10 @@ def dist_plot(rating_df):
 def win_probability_matrix(matrix_df):
     '''returns a win probability matrix plot as bytecode'''
     plt.style.use('ggplot')
-
+     
     f, ax = plt.subplots(figsize=(8, 7))
-    sns.heatmap(matrix_df, cmap=plt.cm.viridis_r, square=True,
-                cbar_kws={"shrink": .5, "label":"win pct (y)"}, ax=ax)
+    sns.heatmap(matrix_df, square=True, cmap=plt.cm.viridis_r, 
+                    cbar_kws={"shrink": .5, "label":"win pct (y)"}, ax=ax)
 
     plt.title('Win Probability Matrix')
     plt.xticks(rotation=90)

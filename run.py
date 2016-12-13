@@ -15,6 +15,7 @@ import pandas as pd
 import time
 import itertools
 import numpy as np
+from collections import OrderedDict
 
 def create_app():
     app = Flask(__name__, static_url_path='')
@@ -149,14 +150,17 @@ def ratings():
     ratingdf = ratingdf.to_dict('records')
     # top is for the datatable as records, bottom is TrueSkill objects
     r_dict = rating_df_to_dict(ratingdf_2)
+    rdo = OrderedDict(sorted(r_dict.items(), key=lambda x:x[1].mu, reverse=True))
 
     perc_df = pd.DataFrame()
 
-    for pair in list(itertools.combinations(r_dict, 2)):
-        prob = win_probability(r_dict[pair[0]], r_dict[pair[1]])
+    for pair in list(itertools.combinations_with_replacement(rdo, 2)):
+        prob = win_probability(rdo[pair[0]], rdo[pair[1]])
         perc_df.loc[pair[0], pair[1]] = prob
         perc_df.loc[pair[1], pair[0]] = 1 - prob
 
+    
+    
     matrix = win_probability_matrix(perc_df)
 
     return render_template('ratings.html', data=ratingdf,
