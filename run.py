@@ -15,6 +15,8 @@ import pandas as pd
 import time
 import itertools
 import numpy as np
+import logging
+import datetime
 from collections import OrderedDict
 
 def create_app():
@@ -63,6 +65,13 @@ engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 metadata = MetaData(bind=engine)
 
 
+@app.before_first_request
+def setup_logging():
+    if not app.debug:
+        app.logger.addHandler(logging.StreamHandler())
+        app.logger.setLevel(logging.INFO)
+
+
 @app.route('/')
 def homepage():
     paragraph = '''
@@ -74,7 +83,7 @@ def homepage():
 
 @app.route('/games', methods=['GET'])
 def matches():
-    df = pd.read_sql('select * from game where deleted = 0', con=engine)
+    df = pd.read_sql('select * from game where deleted = 0', con=engine) 
     df = df.to_dict('records')
     return render_template('gamelog.html', games=df)
 
@@ -200,4 +209,4 @@ def push_new_ratings(con=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8008)
+    app.run(debug=True, host='0.0.0.0', port=8008, threaded=True)
