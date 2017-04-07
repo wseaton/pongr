@@ -4,9 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import matplotlib.mlab as mlab
-from pandas_highcharts.core import serialize
+# from pandas_highcharts.core import serialize
 from io import BytesIO
 import seaborn as sns
+
+
+sns.set_style("whitegrid")
 
 def dist_plot(rating_df):
     x = np.linspace(0, 50, 500)
@@ -24,7 +27,15 @@ def dist_plot(rating_df):
     final_df['index'] = x
     final_df.set_index('index', inplace=True)
 
-    return serialize(final_df, render_to='my-chart', title='', output_type="json")
+    final_df.plot()
+
+    byte = BytesIO()
+    plt.savefig(byte, format='svg')
+    byte.seek(0)
+    import base64
+    figdata_png = base64.b64encode(byte.getvalue())
+    return figdata_png
+
 
 def win_probability_matrix(matrix_df):
     '''returns a win probability matrix plot as bytecode'''
@@ -45,7 +56,7 @@ def win_probability_matrix(matrix_df):
 
 
     byte = BytesIO()
-    plt.savefig(byte)
+    plt.savefig(byte, format='svg')
     byte.seek(0)
     import base64
     figdata_png = base64.b64encode(byte.getvalue())

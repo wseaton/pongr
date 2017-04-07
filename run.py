@@ -4,19 +4,16 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
 
 from app.form import MatchForm, PlayerForm
-from app.utils import remove_whitespace, flash_errors, rating_df_to_dict
+from app.utils import flash_errors, rating_df_to_dict
 from app.ratings import calculate_ratings, win_probability
 from app.plots import dist_plot, win_probability_matrix
 
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float, Boolean
-from trueskill import Rating, quality_1vs1, rate_1vs1
 
 import pandas as pd
 import time
 import itertools
-import numpy as np
 import logging
-import datetime
 from collections import OrderedDict
 
 def create_app():
@@ -30,6 +27,7 @@ app = create_app()
 app.secret_key = 'supersecret'
 db = SQLAlchemy(app)
 
+
 class Game(db.Model):
     id = Column(Integer, primary_key=True)
     player_a = Column(Text, unique=False)
@@ -41,7 +39,7 @@ class Game(db.Model):
 
 
 class Player(db.Model):
-    player_id =  Column(Integer, primary_key=True)
+    player_id = Column(Integer, primary_key=True)
     first_name = Column(Text, unique=False)
     last_name = Column(Text, unique=False)
     alias = Column(Text, unique=True)
@@ -119,6 +117,7 @@ def record_match():
 
     return render_template('addmatch.html', form=form)
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = PlayerForm(csrf_enabled=False)
@@ -152,28 +151,26 @@ def ratings():
     order by 3 desc
     '''
 
-    ratingdf = pd.read_sql(s, con=engine)
-    chart = dist_plot(ratingdf)
+    rating_df = pd.read_sql(s, con=engine)
+    chart = dist_plot(rating_df)
 
-    ratingdf_2 = ratingdf.copy()
-    ratingdf = ratingdf.to_dict('records')
-    # top is for the datatable as records, bottom is TrueSkill objects
-    r_dict = rating_df_to_dict(ratingdf_2)
-    rdo = OrderedDict(sorted(r_dict.items(), key=lambda x:x[1].mu, reverse=True))
+    rating_df_4_template = rating_df.copy()
+    rating_df = rating_df.to_dict('records')
+    # top is for the data table as records, bottom is TrueSkill objects
+    r_dict = rating_df_to_dict(rating_df_4_template)
+    rdo = OrderedDict(sorted(r_dict.items(), key=lambda x: x[1].mu, reverse=True))
 
-    perc_df = pd.DataFrame()
+    percent_df = pd.DataFrame()
 
     for pair in list(itertools.combinations_with_replacement(rdo, 2)):
         prob = win_probability(rdo[pair[0]], rdo[pair[1]])
-        perc_df.loc[pair[0], pair[1]] = prob
-        perc_df.loc[pair[1], pair[0]] = 1 - prob
+        percent_df.loc[pair[0], pair[1]] = prob
+        percent_df.loc[pair[1], pair[0]] = 1 - prob
 
-    
-    
-    matrix = win_probability_matrix(perc_df)
+    matrix = win_probability_matrix(percent_df)
 
-    return render_template('ratings.html', data=ratingdf,
-                           chart=chart, matrix=matrix.decode('utf8'))
+    return render_template('ratings.html', data=rating_df,
+                           dist=chart, matrix=matrix.decode('utf8'))
 
 
 @app.route('/delete/<game_id>', methods=['POST'])
@@ -194,11 +191,10 @@ def recalculate():
     return redirect('/ratings')
 
 
-
 def push_new_ratings(con=None):
-    '''
+    """
     recalculates player ratings and pushes them to the database
-    '''
+    """
     games = pd.read_sql('select * from game where deleted = 0', con=con)
 
     ratingdf = calculate_ratings(games)
@@ -209,4 +205,4 @@ def push_new_ratings(con=None):
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=8008, threaded=True)
+    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=8008)

@@ -36,14 +36,15 @@
 
 
   <div class="row">
-    <div id="my-chart" class="col-md-6 vcenter">
-    <script type="text/javascript">
-      new Highcharts.Chart({{chart|safe}});
-    </script>
+    <div id="my-chart" class="border col-md-7">
+      {% if dist != None %}
+    <img src="data:image/svg+xml;base64,{{ dist }}" class="img-responsive" \>
+    {% endif %}
+
   </div>
-  <div class="col-md-3 vcenter">
+  <div class="border col-md-5">
     {% if matrix != None %}
-    <img src="data:image/png;base64,{{ matrix }}"\>
+    <img src="data:image/svg+xml;base64,{{ matrix }}" class="img-responsive" \>
     {% endif %}
 </div>
 
