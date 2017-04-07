@@ -5,9 +5,11 @@ flask web application for tracking intra-office ping-pong scores
 
 
 # todo list
-- [x] add win probability matrix page
-- [x] add interactive skill rating distibution plot
+- [ ] add doubles team rankings
+- [ ] weight the rankings to support partial games
 - [ ] add profile page for career stats
+
+maybe:
 - [ ] add login
 - [ ] add game modification/deletion if logged in
 
