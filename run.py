@@ -5,7 +5,7 @@ from flask_bootstrap import Bootstrap
 
 from app.form import MatchForm, PlayerForm, DoublesMatchForm
 from app.utils import flash_errors, rating_df_to_dict
-from app.ratings import calculate_ratings, win_probability
+from app.ratings import calculate_ratings, calculate_doubles_ratings, win_probability
 from app.plots import dist_plot, win_probability_matrix
 
 from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float, Boolean
@@ -109,7 +109,6 @@ def matches():
     singles = singles.to_dict('records')
     doubles = doubles.to_dict('records')
 
-
     return render_template('gamelog.html', singles_games=singles, doubles_games=doubles)
 
 
@@ -176,10 +175,9 @@ def record_doubles():
         db.session.add(record)
         db.session.commit()
 
-        push_new_ratings(con=engine) # todo: update this to push doubles
+        push_new_doubles_ratings(con=engine) # todo: update this to push doubles
 
         return redirect('/games')
-        # todo: add redirect here to doubles games page
     else:
         flash_errors(form)
 
@@ -219,14 +217,19 @@ def ratings():
     order by 3 desc
     '''
 
-    rating_df = pd.read_sql(s, con=engine)
-    chart = dist_plot(rating_df)
+    s_rating_df = pd.read_sql(s, con=engine)
+    d_rating_df = pd.read_sql(s.replace('ratings', 'doubles_ratings'), con=engine)
 
-    rating_df_4_template = rating_df.copy()
-    rating_df = rating_df.to_dict('records')
+    chart = dist_plot(s_rating_df)
+
+    singles_rating_df_4_template = s_rating_df.copy()
+
+    s_rating_df = s_rating_df.to_dict('records')
+    d_rating_df = d_rating_df.to_dict('records')
     # top is for the data table as records, bottom is TrueSkill objects
-    r_dict = rating_df_to_dict(rating_df_4_template)
-    rdo = OrderedDict(sorted(r_dict.items(), key=lambda x: x[1].mu, reverse=True))
+    s_r_dict = rating_df_to_dict(singles_rating_df_4_template)
+
+    rdo = OrderedDict(sorted(s_r_dict.items(), key=lambda x: x[1].mu, reverse=True))
 
     percent_df = pd.DataFrame()
 
@@ -237,7 +240,7 @@ def ratings():
 
     matrix = win_probability_matrix(percent_df)
 
-    return render_template('ratings.html', data=rating_df,
+    return render_template('ratings.html', singles_ratings=s_rating_df, doubles_ratings=d_rating_df,
                            dist=chart, matrix=matrix.decode('utf8'))
 
 
@@ -270,6 +273,20 @@ def push_new_ratings(con=None):
                 .drop('level_0', axis=1))
 
     ratingdf.to_sql('ratings', con=con, if_exists='replace', index=False)
+
+
+
+def push_new_doubles_ratings(con=None):
+    """
+    recalculates doubles ratings and pushes them to the database
+    """
+    games = pd.read_sql('select * from doubles_game where deleted = 0', con=con)
+
+    ratingdf = calculate_doubles_ratings(games)
+    ratingdf = (ratingdf.reset_index().rename(columns={'index':'alias'})
+                .drop('level_0', axis=1))
+
+    ratingdf.to_sql('doubles_ratings', con=con, if_exists='replace', index=False)
 
 
 if __name__ == '__main__':
