@@ -29,7 +29,7 @@
         <span class="glyphicon glyphicon-random" aria-hidden="true">
         </span>
           Refresh Ratings
-        </buttton>
+        </button>
     </form>
   </div>
 
@@ -50,8 +50,11 @@
 
   </div>
 <br>
+
+<h3>Singles</h3>
+
 <div>
-  <table class = 'table table-striped table-bordered' width="90%" id='fine' align='center'>
+  <table class = 'display' width="90%" id='fine' align='center'>
 
   			<thead>
   				<tr>
@@ -65,7 +68,7 @@
   				</tr>
   			</thead>
   			<tbody>
-  				{% for item in data %}
+  				{% for item in singles_ratings %}
   				<tr>
             <td> {{item['first_name']}}  </td>
             <td> {{item['last_name']}}  </td>
@@ -81,6 +84,38 @@
 </div>
 <br>
 
+<h3>Doubles</h3>
+
+<div>
+  <table class = 'display' width="90%" id='fine' align='center'>
+
+  			<thead>
+  				<tr>
+            <th> First </th>
+            <th> Last </th>
+  					<th> Rating (&mu;) </th>
+  					<th> &sigma; </th>
+  					<th> TrueSkill (&mu;-3&sigma;)</th>
+
+
+  				</tr>
+  			</thead>
+  			<tbody>
+  				{% for item in doubles_ratings %}
+  				<tr>
+            <td> {{item['first_name']}}  </td>
+            <td> {{item['last_name']}}  </td>
+            <td> {{item['rating']}}  </td>
+  					<td> {{item['sigma']}}  </td>
+  					<td> {{item['trueskill']}}  </td>
+
+  				</tr>
+  				{% endfor %}
+  			</tbody>
+  		</table>
+
+</div>
+
 
 
 </body>
@@ -91,7 +126,7 @@
 <script type="text/javascript">
 
 $(document).ready( function () {
-    $('#fine').DataTable({
+    $('table.display').DataTable({
       "paging":false,
       "info":false,
       "order":[[4, "desc"]]

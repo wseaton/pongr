@@ -1,49 +1,127 @@
 import pandas as pd
 import numpy as np
-from trueskill import Rating, quality_1vs1, rate_1vs1
+from trueskill import Rating, rate_1vs1, rate
 from trueskill import TrueSkill
+from itertools import combinations
 from .utils import remove_whitespace
 
 
 def calculate_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
-    '''
+    """
     calculates player ratings and outputs a summary dict or dataframe of results
-    '''
+    :param rating_object: TrueSkill object
+    :param return_type: 'dict' or 'dataframe'
+    :type game_df: pd.DataFrame
+    """
 
-    game_df.player_a = game_df.player_a.apply(remove_whitespace)
-    game_df.player_b = game_df.player_b.apply(remove_whitespace)
+    for col in game_df.columns:
+        if 'player' in col:
+            game_df[col] = game_df[col].apply(remove_whitespace)
 
     all_players = set(list(game_df.player_a.unique()) + list(game_df.player_b.unique()))
-
     ratings = {k :rating_object for k in all_players}
 
     for row in game_df.iterrows():
+        
+        player_a = ratings[row[1]['player_a']]
+        player_b = ratings[row[1]['player_b']]
+        
         if row[1]['score_a'] > row[1]['score_b']:
-            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
-                ratings[row[1]['player_a']], ratings[row[1]['player_b']])
+            player_a, player_b = rate_1vs1(player_a, player_b)
         elif row[1]['score_a'] < row[1]['score_b']:
-            ratings[row[1]['player_b']], ratings[row[1]['player_a']] = rate_1vs1(
-                ratings[row[1]['player_b']], ratings[row[1]['player_a']])
+            player_b, player_a = rate_1vs1(player_b, player_a)
         else:
-            ratings[row[1]['player_a']], ratings[row[1]['player_b']] = rate_1vs1(
-                ratings[row[1]['player_a']], ratings[row[1]['player_b']], drawn=True)
+            player_a, player_b = rate_1vs1(player_a, player_b, drawn=True)
+
+        ratings[row[1]['player_a']] = player_a
+        ratings[row[1]['player_b']] = player_b
 
     if return_type == 'dict':
         return ratings
 
     elif return_type == 'dataframe':
 
-        ratingdf = pd.DataFrame()
+        rating_df = pd.DataFrame()
 
         for k, v in ratings.iteritems():
-            ratingdf.loc[k, 'rating'] = v.mu
-            ratingdf.loc[k, 'sigma'] = v.sigma
-            ratingdf.loc[k, 'tau'] = v.tau
-            ratingdf.loc[k, 'pi'] = v.pi
-            ratingdf.loc[k, 'trueskill'] = v.exposure
+            rating_df.loc[k, 'rating'] = v.mu
+            rating_df.loc[k, 'sigma'] = v.sigma
+            rating_df.loc[k, 'tau'] = v.tau
+            rating_df.loc[k, 'pi'] = v.pi
+            rating_df.loc[k, 'trueskill'] = v.exposure
 
-        ratingdf.reset_index(inplace=True)
-        return ratingdf
+        rating_df.reset_index(inplace=True)
+        return rating_df
+
+
+def calculate_doubles_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
+    
+    for col in game_df.columns:
+        if 'player' in col:
+            game_df[col] = game_df[col].apply(remove_whitespace)
+
+    all_players = set(list(game_df.player_a_team_a.unique()) + list(game_df.player_b_team_a.unique())
+                    + list(game_df.player_a_team_b.unique()) + list(game_df.player_b_team_b.unique()))
+
+    ratings = {k:rating_object for k in all_players}
+
+    for row in game_df.iterrows():
+
+        player_a_team_a = ratings[row[1]['player_a_team_a']]
+        player_b_team_a = ratings[row[1]['player_b_team_a']]
+        player_a_team_b = ratings[row[1]['player_a_team_b']]
+        player_b_team_b = ratings[row[1]['player_b_team_b']]
+
+        t_a = player_a_team_a, player_b_team_a
+        t_b = player_a_team_b, player_b_team_b
+
+        if row[1]['score_team_a'] > row[1]['score_team_b']:
+            t_a, t_b = rate([t_a, t_b], ranks=[0, 1])
+        elif row[1]['score_team_a'] < row[1]['score_team_b']:
+            t_a, t_b = rate([t_a, t_b], ranks=[1, 0])
+        else:
+            t_a, t_b = rate([t_a, t_b], ranks=[0, 0])
+
+        player_a_team_a, player_b_team_a = t_a
+        player_a_team_b, player_b_team_b = t_b
+
+        ratings[row[1]['player_a_team_a']] = player_a_team_a
+        ratings[row[1]['player_b_team_a']] = player_b_team_a
+        ratings[row[1]['player_a_team_b']] = player_a_team_b
+        ratings[row[1]['player_b_team_b']] = player_b_team_b
+
+    if return_type == 'dict':
+        return ratings
+
+    elif return_type == 'dataframe':
+
+        rating_df = pd.DataFrame()
+
+        for k, v in ratings.iteritems():
+            rating_df.loc[k, 'rating'] = v.mu
+            rating_df.loc[k, 'sigma'] = v.sigma
+            rating_df.loc[k, 'tau'] = v.tau
+            rating_df.loc[k, 'pi'] = v.pi
+            rating_df.loc[k, 'trueskill'] = v.exposure
+
+        rating_df.reset_index(inplace=True)
+        return rating_df
+
+
+def calculate_team_ratings(game_df):
+    for col in game_df.columns:
+        if 'player' in col:
+            game_df[col] = game_df[col].apply(remove_whitespace)
+
+    all_players = set(list(game_df.player_a_team_a.unique()) + list(game_df.player_b_team_a.unique())
+                      + list(game_df.player_a_team_b.unique()) + list(game_df.player_b_team_b.unique()))
+
+    teams = combinations(all_players, 2)
+
+    ratings = {k: Rating() for k in teams}
+
+    # todo: finish this
+
 
 
 def win_probability(rating_a, rating_b):
