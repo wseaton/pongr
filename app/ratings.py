@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from trueskill import Rating, rate_1vs1, rate
 from trueskill import TrueSkill
+from itertools import combinations
 from .utils import remove_whitespace
 
 
@@ -105,6 +106,22 @@ def calculate_doubles_ratings(game_df, rating_object=Rating(), return_type='data
 
         rating_df.reset_index(inplace=True)
         return rating_df
+
+
+def calculate_team_ratings(game_df):
+    for col in game_df.columns:
+        if 'player' in col:
+            game_df[col] = game_df[col].apply(remove_whitespace)
+
+    all_players = set(list(game_df.player_a_team_a.unique()) + list(game_df.player_b_team_a.unique())
+                      + list(game_df.player_a_team_b.unique()) + list(game_df.player_b_team_b.unique()))
+
+    teams = combinations(all_players, 2)
+
+    ratings = {k: Rating() for k in teams}
+
+    # todo: finish this
+
 
 
 def win_probability(rating_a, rating_b):

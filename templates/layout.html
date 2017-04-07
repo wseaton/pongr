@@ -29,7 +29,10 @@
          <a href="/games">Results</a>
       </li>
       <li {% if request.path == '/record_match' %}class="active"{% endif %}>
-           <a href="/record_match">Upload</a>
+           <a href="/record_match">Singles</a>
+        </li>
+      <li {% if request.path == '/record_doubles' %}class="active"{% endif %}>
+           <a href="/record_doubles">Doubles</a>
         </li>
       
       <li {% if request.path == '/register' %}class="active"{% endif %}>

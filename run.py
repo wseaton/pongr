@@ -175,7 +175,7 @@ def record_doubles():
         db.session.add(record)
         db.session.commit()
 
-        push_new_doubles_ratings(con=engine) # todo: update this to push doubles
+        push_new_doubles_ratings(con=engine)
 
         return redirect('/games')
     else:
@@ -190,7 +190,7 @@ def register():
 
     if request.method == 'POST' and form.validate_on_submit():
         record = Player(alias=form.alias.data, first_name=form.first_name.data,
-                      last_name=form.last_name.data)
+                        last_name=form.last_name.data)
         db.session.add(record)
         db.session.commit()
 
