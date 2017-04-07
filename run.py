@@ -15,6 +15,8 @@ import time
 import itertools
 import logging
 from collections import OrderedDict
+from datetime import datetime
+import pytz
 
 def create_app():
     app = Flask(__name__, static_url_path='')
@@ -81,7 +83,13 @@ def homepage():
 
 @app.route('/games', methods=['GET'])
 def matches():
-    df = pd.read_sql('select * from game where deleted = 0', con=engine) 
+    df = pd.read_sql('select * from game where deleted = 0', con=engine)
+
+    tz = pytz.timezone('America/New_York')
+    df['timestamp'] = df['timestamp'].apply(datetime.utcfromtimestamp)
+    df['timestamp'] = df['timestamp'].apply(datetime.replace, tzinfo=tz)
+    df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S %Z')
+
     df = df.to_dict('records')
     return render_template('gamelog.html', games=df)
 
