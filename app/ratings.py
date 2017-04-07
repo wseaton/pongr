@@ -1,14 +1,17 @@
 import pandas as pd
 import numpy as np
-from trueskill import Rating, quality_1vs1, rate_1vs1
+from trueskill import Rating, rate_1vs1
 from trueskill import TrueSkill
 from .utils import remove_whitespace
 
 
 def calculate_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
-    '''
+    """
     calculates player ratings and outputs a summary dict or dataframe of results
-    '''
+    :param rating_object: TrueSkill object
+    :param return_type: 'dict' or 'dataframe'
+    :type game_df: pd.DataFrame
+    """
 
     game_df.player_a = game_df.player_a.apply(remove_whitespace)
     game_df.player_b = game_df.player_b.apply(remove_whitespace)

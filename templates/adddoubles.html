@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+{% block content %}
+
+
+<html>
+
+
+<script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/i18n/defaults-*.min.js"></script>
+
+<br>
+<body>
+<form method="POST" action="/record_doubles">
+  <!-- {% for field in form %}
+   {% if field.name is not equalto 'csrf_token' %}
+    {{field.label}}
+     {{field(size=20)}}
+   {% endif %}
+  <br>
+  {% endfor %} -->
+  <div class="col-xs-2">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class=flashes>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    {#  team a #}
+    <div class="form-group">
+        <label for="PlayerA">Team A Player 1</label>
+          <select id='player_a_team_a' class="form-control" name="player_a_team_a">
+		  <option value="" selected disabled>Select</option>
+	  {% for choice in form.player_a_team_a.choices %}
+            <option value='{{choice [0]}}'>{{ choice[1] }}</option>
+          {% endfor %}
+          </select>
+      </div>
+      <div class="form-group">
+            <label for="PlayerA">Team A Player 2</label>
+              <select id='player_b_team_a' class="form-control" name="player_b_team_a">
+              <option value="" selected disabled>Select</option>
+          {% for choice in form.player_b_team_a.choices %}
+                <option value='{{choice [0]}}'>{{ choice[1] }}</option>
+              {% endfor %}
+              </select>
+          </div>
+      <div class="form-group">
+        <label for="TeamAScore">Team A Score</label>
+        <input type="text" name="score_team_a" class="form-control" id="score_team_a"><br>
+          {% for error in form.score_team_a.errors %}
+          <div class="alert alert-danger" role="alert">
+            <strong>Oh shit!</strong> {{error}}
+          </div>
+            {% endfor %}<br>
+      </div>
+    {#  team b #}
+    <div class="form-group">
+        <label for="PlayerATeamB">Team B Player 1</label>
+          <select id='player_a_team_b' class="form-control" name="player_a_team_b">
+		  <option value="" selected disabled>Select</option>
+	  {% for choice in form.player_a_team_b.choices %}
+            <option value='{{choice [0]}}'>{{ choice[1] }}</option>
+          {% endfor %}
+          </select>
+      </div>
+      <div class="form-group">
+            <label for="PlayerBTeamB">Team B Player 2</label>
+              <select id='player_b_team_b' class="form-control" name="player_b_team_b">
+              <option value="" selected disabled>Select</option>
+          {% for choice in form.player_b_team_b.choices %}
+                <option value='{{choice [0]}}'>{{ choice[1] }}</option>
+              {% endfor %}
+              </select>
+          </div>
+      <div class="form-group">
+        <label for="TeamBScore">Team B Score</label>
+        <input type="text" name="score_team_b" class="form-control" id="score_team_b"><br>
+          {% for error in form.score_team_b.errors %}
+          <div class="alert alert-danger" role="alert">
+            <strong>Oh shit!</strong> {{error}}
+          </div>
+            {% endfor %}<br>
+      </div>
+
+      <div class="form-group">
+        <input type="submit" class="btn btn-success" value="Submit Match">
+      </div>
+    </div>
+
+    <!-- <div class="checkbox">
+      <label>
+        <input type="checkbox"> Check me out
+      </label>
+    </div> -->
+
+</form>
+</body>
+<script type="text/javascript">
+
+$(document).ready( function () {
+  $('.selectpicker').selectpicker({
+    style: 'btn-info',
+    size: 4
+  });
+});
+
+</script>
+</html>
+
+{% endblock %}

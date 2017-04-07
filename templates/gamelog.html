@@ -15,7 +15,10 @@
 
 <br>
 <body>
-  <table class = 'table table-striped table-bordered' width="90%" id='fine' align='center'>
+
+<h3>Singles</h3>
+
+  <table class = 'display' width="90%" id='fine' align='center'>
 
   			<thead>
   				<tr>
@@ -30,7 +33,7 @@
   				</tr>
   			</thead>
   			<tbody>
-  				{% for item in games %}
+  				{% for item in singles_games %}
   				<tr>
             <td> {{item['id']}}  </td>
   					<td> {{item['player_a']}}  </td>
@@ -42,7 +45,7 @@
                 <form action="/delete/{{ item['id'] }}" method="post">
                 <button type="submit" class="btn btn-default">
                   <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                </buttton>
+                </button>
                 </form>
             </td>
 
@@ -52,19 +55,60 @@
   			</tbody>
   		</table>
 
+<br>
+
+  <h3>Doubles</h3>
+
+  <table class = 'display' width="90%" id='fine2' align='center'>
+
+  			<thead>
+  				<tr>
+  					<th> Game ID </th>
+  					<th> Player A Team A </th>
+                    <th> Player B Team A </th>
+  					<th> Team A Score  </th>
+                    <th> Player A Team B </th>
+                    <th> Player B Team B </th>
+  					<th> Team B Score  </th>
+  					<th> Time </th>
+                    <th> Actions </th>
+
+  				</tr>
+  			</thead>
+  			<tbody>
+  				{% for item in doubles_games %}
+  				<tr>
+                    <td> {{item['id']}}  </td>
+  					<td> {{item['player_a_team_a']}}  </td>
+                    <td> {{item['player_b_team_a']}}  </td>
+  					<td> {{item['score_team_a']}}  </td>
+                    <td> {{item['player_a_team_b']}}  </td>
+  					<td> {{item['player_b_team_b']}} </td>
+  					<td> {{item['score_team_b']}}  </td>
+  					<td> {{item['timestamp']}}  </td>
+                    <td>
+                        <form action="/delete/{{ item['id'] }}" method="post">
+                        <button type="submit" class="btn btn-default">
+                          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
+                        </button>
+                        </form>
+                    </td>
+  				</tr>
+  				{% endfor %}
+  			</tbody>
+  		</table>
+
 
 </body>
 
 <script type="text/javascript">
-
 $(document).ready( function () {
-    $('#fine').DataTable({
+    $('table.display').DataTable({
       "info":false,
-      'pageLength':50, 
+      'pageLength':10,
       "order":[[0, "desc"]]
     });
 } );
-
 
 </script>
 </html>
