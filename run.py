@@ -1,77 +1,52 @@
-from flask import Flask, render_template, redirect, flash, request
-from flask_restless import APIManager
-from flask_sqlalchemy import SQLAlchemy
-from flask_bootstrap import Bootstrap
-
-from app.form import MatchForm, PlayerForm, DoublesMatchForm
-from app.utils import flash_errors, rating_df_to_dict
-from app.ratings import calculate_ratings, calculate_doubles_ratings, win_probability
-from app.plots import dist_plot, win_probability_matrix
-
-from sqlalchemy import Column, Integer, Text, create_engine, MetaData, Float, Boolean
-
-import pandas as pd
-import time
 import itertools
 import logging
+import time
 from collections import OrderedDict
 from datetime import datetime
+
+import pandas as pd
 import pytz
+from flask import Flask, render_template, redirect, request
+from flask_admin import Admin
+from flask_bootstrap import Bootstrap
+from flask_cache import Cache
+from flask_compress import Compress
+from sqlalchemy import create_engine, MetaData
+
+from app.admin import GameView, DoublesView, PlayerView, RatingsView
+from app.form import MatchForm, PlayerForm, DoublesMatchForm
+from app.model import Game, DoublesGame, Player, Ratings, db
+from app.plots import dist_plot, win_probability_matrix
+from app.ratings import calculate_ratings, calculate_doubles_ratings, win_probability
+from app.utils import flash_errors, rating_df_to_dict
+
+cache = Cache(config={'CACHE_TYPE': 'simple'})
+compress = Compress()
+
 
 def create_app():
     app = Flask(__name__, static_url_path='')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pong.db'
+    cache.init_app(app)
+    compress.init_app(app)
     Bootstrap(app)
 
-    return app
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
 
-app = create_app()
+        admin = Admin(app, name='pongr', template_mode='bootstrap3')
+        admin.add_view(GameView(Game, db.session))
+        admin.add_view(DoublesView(DoublesGame, db.session))
+        admin.add_view(PlayerView(Player, db.session))
+        admin.add_view(RatingsView(Ratings, db.session))
+
+    return app, cache
+
+
+app, cache = create_app()
 app.secret_key = 'supersecret'
-db = SQLAlchemy(app)
 
-
-class Game(db.Model):
-    id = Column(Integer, primary_key=True)
-    player_a = Column(Text, unique=False)
-    player_b = Column(Text, unique=False)
-    score_a = Column(Integer, unique=False)
-    score_b = Column(Integer, unique=False)
-    timestamp = Column(Integer, unique=False)
-    deleted = Column(Boolean, unique=False)
-
-
-class DoublesGame(db.Model):
-    id = Column(Integer, primary_key=True)
-    player_a_team_a = Column(Text, unique=False)
-    player_b_team_a = Column(Text, unique=False)
-    player_a_team_b = Column(Text, unique=False)
-    player_b_team_b = Column(Text, unique=False)
-    score_team_a = Column(Integer, unique=False)
-    score_team_b = Column(Integer, unique=False)
-    timestamp = Column(Integer, unique=False)
-    deleted = Column(Boolean, unique=False)
-
-
-class Player(db.Model):
-    player_id = Column(Integer, primary_key=True)
-    first_name = Column(Text, unique=False)
-    last_name = Column(Text, unique=False)
-    alias = Column(Text, unique=True)
-
-
-class Ratings(db.Model):
-    alias = Column(Text, primary_key=True)
-    rating = Column(Float, unique=False)
-    sigma = Column(Float, unique=False)
-    tau = Column(Float, unique=False)
-    pi = Column(Float, unique=False)
-    trueskill = Column(Float, unique=False)
-
-
-db.create_all()
-
-api_manager = APIManager(app, flask_sqlalchemy_db=db)
-api_manager.create_api(Game, methods=['GET', 'POST', 'DELETE', 'PUT'])
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 metadata = MetaData(bind=engine)
@@ -202,6 +177,7 @@ def register():
     return render_template('register.html')
 
 
+@cache.cached(timeout=60)
 @app.route('/ratings', methods=['GET'])
 def ratings():
     s = '''

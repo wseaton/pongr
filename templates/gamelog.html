@@ -28,7 +28,7 @@
   					<th> Player B </th>
   					<th> Score </th>
   					<th> Time </th>
-            <th> Actions </th>
+
 
   				</tr>
   			</thead>
@@ -41,13 +41,7 @@
   					<td> {{item['player_b']}} </td>
   					<td> {{item['score_b']}}  </td>
   					<td> {{item['timestamp']}}  </td>
-            <td>
-                <form action="/delete/{{ item['id'] }}" method="post">
-                <button type="submit" class="btn btn-default">
-                  <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                </button>
-                </form>
-            </td>
+
 
 
   				</tr>
@@ -71,7 +65,7 @@
                     <th> Player B Team B </th>
   					<th> Team B Score  </th>
   					<th> Time </th>
-                    <th> Actions </th>
+
 
   				</tr>
   			</thead>
@@ -86,13 +80,7 @@
   					<td> {{item['player_b_team_b']}} </td>
   					<td> {{item['score_team_b']}}  </td>
   					<td> {{item['timestamp']}}  </td>
-                    <td>
-                        <form action="/delete/{{ item['id'] }}" method="post">
-                        <button type="submit" class="btn btn-default">
-                          <span class="glyphicon glyphicon-trash" aria-hidden="true"></span>
-                        </button>
-                        </form>
-                    </td>
+
   				</tr>
   				{% endfor %}
   			</tbody>
