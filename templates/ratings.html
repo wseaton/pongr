@@ -51,7 +51,12 @@
   </div>
 <br>
 
-<h3>Singles</h3>
+<p> Rating distributions are <a href="https://en.wikipedia.org/wiki/Normal_distribution">Gaussian</a> and centered on the Rating parameter &mu;. Their width is a function of your rating variance (&sigma;).
+    You can reduce your variance by logging more games in the tracker, which causes your rating distribution chart to get skinnier. </p>
+<p> Your TrueSkill, is a measure of your skill that is variance adjusted. The loss function that we use is -3&sigma;,
+in order to offset this effect you need to play more games!</p>
+
+<h3>Singles Ratings</h3>
 
 <div>
   <table class = 'display' width="90%" id='fine' align='center'>
@@ -84,7 +89,7 @@
 </div>
 <br>
 
-<h3>Doubles</h3>
+<h3>Individual Doubles Ratings</h3>
 
 <div>
   <table class = 'display' width="90%" id='fine' align='center'>
@@ -116,6 +121,33 @@
 
 </div>
 
+<h3>Team Doubles Ratings</h3>
+
+<div>
+  <table class = 'display' width="90%" id='fine' align='center'>
+
+    <thead>
+        <tr>
+            <th> Team </th>
+            <th> Rating (&mu;) </th>
+            <th> &sigma; </th>
+            <th> TrueSkill (&mu;-3&sigma;)</th>
+        </tr>
+    </thead>
+        <tbody>
+            {% for item in team_df %}
+        <tr>
+            <td> {{item['team']}}  </td>
+            <td> {{item['rating']}}  </td>
+            <td> {{item['sigma']}}  </td>
+            <td> {{item['trueskill']}}  </td>
+
+        </tr>
+            {% endfor %}
+        </tbody>
+  		</table>
+
+</div>
 
 
 </body>

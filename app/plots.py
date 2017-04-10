@@ -27,7 +27,9 @@ def dist_plot(rating_df):
     final_df['index'] = x
     final_df.set_index('index', inplace=True)
 
-    final_df.plot()
+    final_df.index.names = ['Individual Gaussian Skill Distribution']
+    final_df.plot(legend=True)
+
 
     byte = BytesIO()
     plt.savefig(byte, format='svg')

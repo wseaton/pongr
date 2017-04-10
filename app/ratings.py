@@ -63,7 +63,7 @@ def calculate_doubles_ratings(game_df, rating_object=Rating(), return_type='data
     all_players = set(list(game_df.player_a_team_a.unique()) + list(game_df.player_b_team_a.unique())
                     + list(game_df.player_a_team_b.unique()) + list(game_df.player_b_team_b.unique()))
 
-    ratings = {k:rating_object for k in all_players}
+    ratings = {k: rating_object for k in all_players}
 
     for row in game_df.iterrows():
 
@@ -108,7 +108,7 @@ def calculate_doubles_ratings(game_df, rating_object=Rating(), return_type='data
         return rating_df
 
 
-def calculate_team_ratings(game_df):
+def calculate_team_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
     for col in game_df.columns:
         if 'player' in col:
             game_df[col] = game_df[col].apply(remove_whitespace)
@@ -118,10 +118,61 @@ def calculate_team_ratings(game_df):
 
     teams = combinations(all_players, 2)
 
-    ratings = {k: Rating() for k in teams}
+    ratings = {k: rating_object for k in teams}
 
-    # todo: finish this
+    for row in game_df.iterrows():
 
+        try:
+            team_a = ratings[(row[1]['player_a_team_a'], row[1]['player_b_team_a'])]
+            code = 1
+        except KeyError:
+            team_a = ratings[(row[1]['player_b_team_a'], row[1]['player_a_team_a'])]
+            code = 0
+
+        try:
+            team_b = ratings[(row[1]['player_a_team_b'], row[1]['player_b_team_b'])]
+            gcode = 1
+        except KeyError:
+            team_b = ratings[(row[1]['player_b_team_b'], row[1]['player_a_team_b'])]
+            gcode = 0
+
+        if row[1]['score_team_a'] > row[1]['score_team_b']:
+            team_a, team_b = rate_1vs1(team_a, team_b)
+        elif row[1]['score_team_a'] < row[1]['score_team_b']:
+            team_b, team_a = rate_1vs1(team_b, team_a)
+        else:
+            team_a, team_b = rate_1vs1(team_a, team_b, drawn=True)
+
+        if code == 1:
+            ratings[(row[1]['player_a_team_a'], row[1]['player_b_team_a'])] = team_a
+        else:
+            ratings[(row[1]['player_b_team_a'], row[1]['player_a_team_a'])] = team_a
+
+
+        if gcode == 1:
+            ratings[(row[1]['player_a_team_b'], row[1]['player_b_team_b'])] = team_b
+        else:
+            ratings[(row[1]['player_b_team_b'], row[1]['player_a_team_b'])] = team_a
+
+    if return_type == 'dict':
+        return ratings
+
+    elif return_type == 'dataframe':
+
+        rating_df = pd.DataFrame()
+
+        for k, v in ratings.iteritems():
+            team = '-'.join(k)
+            rating_df.loc[team, 'rating'] = v.mu
+            rating_df.loc[team, 'sigma'] = v.sigma
+            rating_df.loc[team, 'tau'] = v.tau
+            rating_df.loc[team, 'pi'] = v.pi
+            rating_df.loc[team, 'trueskill'] = v.exposure
+
+        rating_df.reset_index(inplace=True)
+        # todo fix this filter
+        rating_df = rating_df[rating_df['sigma'] < 8.3]
+        return rating_df
 
 
 def win_probability(rating_a, rating_b):
