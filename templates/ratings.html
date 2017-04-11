@@ -7,18 +7,16 @@
 </head>
 
 <link rel="stylesheet" media="screen" href = "{{ url_for('static', filename='css/custom.css') }}">
-<link  rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.css">
-<link  rel="stylesheet" type="text/css" href = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.css">
+<link rel="stylesheet" type="text/css" href="//cdn.datatables.net/1.10.13/css/jquery.dataTables.css">
+<link rel="stylesheet" type="text/css"
+      href="//cdn.datatables.net/plug-ins/1.10.13/integration/bootstrap/3/dataTables.bootstrap.css">
 
 <script type="text/javascript" language="javascript" src="//code.jquery.com/jquery-1.11.1.min.js"></script>
 <script type="text/javascript" language = "javascript" src = "//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-<script type="text/javascript" language="javascript" src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" language = "javascript" src = "//cdn.datatables.net/plug-ins/1.10.7/integration/bootstrap/3/dataTables.bootstrap.js"></script>
-<script type="text/javascript" language = "javascript" src = "//code.highcharts.com/highcharts.js"></script>
-
-
-
-
+<script type="text/javascript" language="javascript"
+        src="//cdn.datatables.net/1.10.13/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" language="javascript"
+        src="//cdn.datatables.net/plug-ins/1.10.13/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 
 
 <br>
@@ -33,13 +31,11 @@
     </form>
   </div>
 
-
-
-  <div class="row">
+<div class="row">
     <div id="my-chart" class="border col-md-7">
-      {% if dist != None %}
-    <img src="data:image/svg+xml;base64,{{ dist }}" class="img-responsive" \>
-    {% endif %}
+        {% if dist != None %}
+            <img src="data:image/svg+xml;base64,{{ dist }}" class="img-responsive" \>
+        {% endif %}
 
   </div>
   <div class="border col-md-5">
@@ -55,11 +51,11 @@
     You can reduce your variance by logging more games in the tracker, which causes your rating distribution chart to get skinnier. </p>
 <p> Your TrueSkill, is a measure of your skill that is variance adjusted. The loss function that we use is -3&sigma;,
 in order to offset this effect you need to play more games!</p>
-
-<h3>Singles Ratings</h3>
+<br>
+<h4 align="center">Singles Ratings</h4>
 
 <div>
-  <table class = 'display' width="90%" id='fine' align='center'>
+    <table class='display compact' width="95%" id='fine' align='center'>
 
   			<thead>
   				<tr>
@@ -88,11 +84,11 @@ in order to offset this effect you need to play more games!</p>
 
 </div>
 <br>
-
-<h3>Individual Doubles Ratings</h3>
+<br>
+<h4 align="center">Individual Doubles Ratings</h4>
 
 <div>
-  <table class = 'display' width="90%" id='fine' align='center'>
+    <table class='display compact' width="95%" id='fine' align='center'>
 
   			<thead>
   				<tr>
@@ -120,15 +116,16 @@ in order to offset this effect you need to play more games!</p>
   		</table>
 
 </div>
-
-<h3>Team Doubles Ratings</h3>
+<br>
+<h4 align="center">Team Doubles Ratings</h4>
 
 <div>
-  <table class = 'display' width="90%" id='fine' align='center'>
+    <table class='display compact' width="95%" id='fine' align='center'>
 
     <thead>
         <tr>
-            <th> Team </th>
+            <th> Player1</th>
+            <th> Player2</th>
             <th> Rating (&mu;) </th>
             <th> &sigma; </th>
             <th> TrueSkill (&mu;-3&sigma;)</th>
@@ -137,7 +134,8 @@ in order to offset this effect you need to play more games!</p>
         <tbody>
             {% for item in team_df %}
         <tr>
-            <td> {{item['team']}}  </td>
+            <td> {{ item['player1'] }}  </td>
+            <td> {{ item['player2'] }}  </td>
             <td> {{item['rating']}}  </td>
             <td> {{item['sigma']}}  </td>
             <td> {{item['trueskill']}}  </td>
@@ -159,11 +157,12 @@ in order to offset this effect you need to play more games!</p>
 
 $(document).ready( function () {
     $('table.display').DataTable({
-      "paging":false,
-      "info":false,
-      "order":[[4, "desc"]]
+        "paging": false,
+        "info": false,
+        "filter": false,
+        "aaSorting": [[4, "desc"]]
     });
-} );
+})
 
 </script>
 </html>

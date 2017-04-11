@@ -1,8 +1,10 @@
-import pandas as pd
+from itertools import combinations
+
 import numpy as np
+import pandas as pd
 from trueskill import Rating, rate_1vs1, rate
 from trueskill import TrueSkill
-from itertools import combinations
+
 from .utils import remove_whitespace
 
 
@@ -172,6 +174,9 @@ def calculate_team_ratings(game_df, rating_object=Rating(), return_type='datafra
         rating_df.reset_index(inplace=True)
         # todo fix this filter
         rating_df = rating_df[rating_df['sigma'] < 8.3]
+
+        rating_df['player1'], rating_df['player2'] = rating_df['index'].str.split('-', 1).str
+
         return rating_df
 
 

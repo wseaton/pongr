@@ -6,12 +6,12 @@ from datetime import datetime
 
 import pandas as pd
 import pytz
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, flash
 from flask_admin import Admin
 from flask_bootstrap import Bootstrap
 from flask_cache import Cache
 from flask_compress import Compress
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine, MetaData, exists
 
 from app.admin import GameView, DoublesView, PlayerView, RatingsView
 from app.form import MatchForm, PlayerForm, DoublesMatchForm
@@ -164,12 +164,16 @@ def register():
     form = PlayerForm(csrf_enabled=False)
 
     if request.method == 'POST' and form.validate_on_submit():
-        record = Player(alias=form.alias.data, first_name=form.first_name.data,
-                        last_name=form.last_name.data)
-        db.session.add(record)
-        db.session.commit()
+        if db.session.query(exists().where(Player.alias == form.alias.data)).scalar():
+            flash('Alias already taken! Are you registered already?', category='warn')
+        else:
+            record = Player(alias=form.alias.data, first_name=form.first_name.data,
+                            last_name=form.last_name.data)
+            db.session.add(record)
+            db.session.commit()
+            return redirect('/record_match')
 
-        return redirect('/record_match')
+        return render_template('register.html')
 
     else:
         flash_errors(form)
@@ -195,7 +199,8 @@ def ratings():
 
     s_team = '''
         select
-            team,
+            player1,
+            player2,
             rating,
             sigma,
             trueskill
@@ -233,6 +238,27 @@ def ratings():
     return render_template('ratings.html', singles_ratings=s_rating_df,
                            doubles_ratings=d_rating_df, team_df=t_rating_df,
                            dist=chart, matrix=matrix.decode('utf8'))
+
+
+@app.route('/test', methods=['GET'])
+def test_chart():
+    import pandas as pd
+    from pandas_highcharts.core import serialize
+    from pandas.compat import StringIO
+    dat = """ts;A;B;C
+    2015-01-01 00:00:00;27451873;29956800;113
+    2015-01-01 01:00:00;20259882;17906600;76
+    2015-01-01 02:00:00;11592256;12311600;48
+    2015-01-01 03:00:00;11795562;11750100;50
+    2015-01-01 04:00:00;9396718;10203900;43
+    2015-01-01 05:00:00;14902826;14341100;53"""
+    df = pd.read_csv(StringIO(dat), sep=';', index_col='ts', parse_dates=['ts'])
+
+    # Basic line plot
+    chart = serialize(df, render_to='my-chart', output_type='json')
+
+    return render_template('test_chart.html', chart=chart)
+
 
 
 @app.route('/delete/<game_id>', methods=['POST'])

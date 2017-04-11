@@ -5,9 +5,20 @@
 
 <br>
 <body>
+
+
 <form method="POST" action="/register">
 
   <div class="col-xs-2">
+      {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              <ul class=flashes>
+                  {% for message in messages %}
+                      <li>{{ message }}</li>
+                  {% endfor %}
+              </ul>
+          {% endif %}
+      {% endwith %}
       <div class="form-group">
           <label for="PlayerA">Alias eg. 'weaton'</label>
           <input type="text" name="alias" class="form-control" id="alias">
