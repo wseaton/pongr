@@ -24,7 +24,7 @@ cache = Cache(config={'CACHE_TYPE': 'simple'})
 compress = Compress()
 
 
-def create_app():
+def create_app(cache):
     app = Flask(__name__, static_url_path='')
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pong.db'
     cache.init_app(app)
@@ -44,7 +44,7 @@ def create_app():
     return app, cache
 
 
-app, cache = create_app()
+app, cache = create_app(cache)
 app.secret_key = 'supersecret'
 
 
@@ -96,7 +96,7 @@ def record_match():
     from player
     '''
     choices = pd.read_sql(s, con=engine)
-    choice_list = [(i['alias'], i['name']) for i in choices.to_dict('records')]
+    choice_list = sorted([(i['alias'], i['name']) for i in choices.to_dict('records')])
 
     form = MatchForm(csrf_enabled=False)
     form.player_a.choices = choice_list
@@ -128,7 +128,7 @@ def record_doubles():
     from player
     '''
     choices = pd.read_sql(s, con=engine)
-    choice_list = [(i['alias'], i['name']) for i in choices.to_dict('records')]
+    choice_list = sorted([(i['alias'], i['name']) for i in choices.to_dict('records')])
 
     form = DoublesMatchForm(csrf_enabled=False)
     form.player_a_team_a.choices = choice_list
@@ -167,7 +167,7 @@ def register():
         if db.session.query(exists().where(Player.alias == form.alias.data)).scalar():
             flash('Alias already taken! Are you registered already?', category='warn')
         else:
-            record = Player(alias=form.alias.data, first_name=form.first_name.data,
+            record = Player(alias=form.alias.data.lower(), first_name=form.first_name.data,
                             last_name=form.last_name.data)
             db.session.add(record)
             db.session.commit()
@@ -237,7 +237,7 @@ def ratings():
 
     return render_template('ratings.html', singles_ratings=s_rating_df,
                            doubles_ratings=d_rating_df, team_df=t_rating_df,
-                           dist=chart, matrix=matrix.decode('utf8'))
+                           dist=chart, matrix=matrix)
 
 
 @app.route('/test', methods=['GET'])

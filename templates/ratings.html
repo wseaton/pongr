@@ -21,28 +21,28 @@
 
 <br>
 <body>
-<div class="span7 text-center">
-    <form action="/recalculate" method="post">
-      <button type="submit" class="btn btn-info">
-        <span class="glyphicon glyphicon-random" aria-hidden="true">
-        </span>
-          Refresh Ratings
-        </button>
-    </form>
-  </div>
+{#<div class="span7 text-center">#}
+{#    <form action="/recalculate" method="post">#}
+{#      <button type="submit" class="btn btn-info">#}
+{#        <span class="glyphicon glyphicon-random" aria-hidden="true">#}
+{#        </span>#}
+{#          Refresh Ratings#}
+{#        </button>#}
+{#    </form>#}
+{#  </div>#}
 
 <div class="row">
     <div id="my-chart" class="border col-md-7">
         {% if dist != None %}
-            <img src="data:image/svg+xml;base64,{{ dist }}" class="img-responsive" \>
+            {{ dist | safe }}
         {% endif %}
 
-  </div>
-  <div class="border col-md-5">
-    {% if matrix != None %}
-    <img src="data:image/svg+xml;base64,{{ matrix }}" class="img-responsive" \>
-    {% endif %}
-</div>
+    </div>
+    <div class="border col-md-5">
+        {% if matrix != None %}
+            {{ matrix | safe }}
+        {% endif %}
+    </div>
 
   </div>
 <br>

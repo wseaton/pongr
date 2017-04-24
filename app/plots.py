@@ -1,15 +1,9 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
 import numpy as np
 import pandas as pd
-import matplotlib.mlab as mlab
-# from pandas_highcharts.core import serialize
-from io import BytesIO
-import seaborn as sns
+import plotly.graph_objs as go
+import plotly.offline as offl
 
-
-sns.set_style("whitegrid")
 
 def dist_plot(rating_df):
     x = np.linspace(0, 50, 500)
@@ -27,39 +21,42 @@ def dist_plot(rating_df):
     final_df['index'] = x
     final_df.set_index('index', inplace=True)
 
-    final_df.index.names = ['Individual Gaussian Skill Distribution']
-    final_df.plot(legend=True)
+    trace_dict = dict()
 
+    for n, col in enumerate(final_df.columns):
+        trace_dict[n] = go.Scatter(
+            x=final_df.index,
+            y=final_df[col],
+            name=col
+        )
 
-    byte = BytesIO()
-    plt.savefig(byte, format='svg')
-    byte.seek(0)
-    import base64
-    figdata_png = base64.b64encode(byte.getvalue())
-    return figdata_png
+    data = trace_dict.values()
+
+    # Edit the layout
+    layout = dict(title='Individual Gaussian Skill Distribution',
+                  xaxis=dict(title='Mu'),
+                  yaxis=dict(title='Value'),
+                  )
+
+    return offl.plot(dict(data=data, layout=layout), output_type='div')
 
 
 def win_probability_matrix(matrix_df):
-    '''returns a win probability matrix plot as bytecode'''
-    plt.style.use('ggplot')
-     
-    f, ax = plt.subplots(figsize=(8, 7))
-    sns.heatmap(matrix_df, square=True, cmap=plt.cm.viridis_r, 
-                    cbar_kws={"shrink": .5, "label":"win pct (y)"}, ax=ax)
+    'returns the win probability matrix plot as a plotly heatmap'
 
-    plt.title('Win Probability Matrix')
-    plt.xticks(rotation=90)
-    plt.yticks(rotation=0)
-    plt.xlabel('loser', fontsize=12)
-    plt.ylabel('winner', fontsize=12)
+    trace = go.Heatmap(
+        z=matrix_df.transpose().values.tolist(),
+        x=matrix_df.columns[::-1],
+        y=matrix_df.columns[::-1],
+        colorscale='Viridis'
+    )
 
-    # We change the fontsize of minor ticks label
-    plt.tick_params(axis='both', which='major', labelsize=12)
+    data = [trace]
 
+    layout = go.Layout(
+        title='Win Probability Matrix',
+        xaxis=dict(title='Loser', ticks=''),
+        yaxis=dict(title='Winner', ticks='')
+    )
 
-    byte = BytesIO()
-    plt.savefig(byte, format='svg')
-    byte.seek(0)
-    import base64
-    figdata_png = base64.b64encode(byte.getvalue())
-    return figdata_png
+    return offl.plot(dict(data=data, layout=layout), output_type='div')
