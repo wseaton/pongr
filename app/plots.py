@@ -36,6 +36,7 @@ def dist_plot(rating_df):
     layout = dict(title='Individual Gaussian Skill Distribution',
                   xaxis=dict(title='Mu'),
                   yaxis=dict(title='Value'),
+                  height=750
                   )
 
     return offl.plot(dict(data=data, layout=layout), output_type='div')
@@ -56,7 +57,8 @@ def win_probability_matrix(matrix_df):
     layout = go.Layout(
         title='Win Probability Matrix',
         xaxis=dict(title='Loser', ticks=''),
-        yaxis=dict(title='Winner', ticks='')
+        yaxis=dict(title='Winner', ticks=''),
+        height=750
     )
 
     return offl.plot(dict(data=data, layout=layout), output_type='div')
