@@ -6,18 +6,20 @@ from datetime import datetime
 
 import pandas as pd
 import pytz
-from flask import Flask, render_template, redirect, request, flash
+from flask import Flask, flash, redirect, render_template, request
 from flask_admin import Admin
 from flask_bootstrap import Bootstrap
 from flask_cache import Cache
 from flask_compress import Compress
-from sqlalchemy import create_engine, MetaData, exists
+from sqlalchemy import MetaData, create_engine, exists
+from sqlalchemy.orm import sessionmaker
 
-from app.admin import GameView, DoublesView, PlayerView, RatingsView
-from app.form import MatchForm, PlayerForm, DoublesMatchForm
-from app.model import Game, DoublesGame, Player, Ratings, db
+from app.admin import DoublesView, GameView, PlayerView, RatingsView
+from app.form import DoublesMatchForm, MatchForm, PlayerForm
+from app.model import DoublesGame, Game, Player, Ratings, db
 from app.plots import dist_plot, win_probability_matrix
-from app.ratings import calculate_ratings, calculate_doubles_ratings, win_probability, calculate_team_ratings
+from app.ratings import (calculate_doubles_ratings, calculate_ratings,
+                         calculate_team_ratings, win_probability)
 from app.utils import flash_errors, rating_df_to_dict
 
 cache = Cache(config={'CACHE_TYPE': 'simple'})
@@ -70,21 +72,17 @@ def homepage():
 
 @app.route('/games', methods=['GET'])
 def matches():
-    singles = pd.read_sql('select * from game where deleted = 0', con=engine)
-    doubles = pd.read_sql('select * from doubles_game where deleted = 0', con=engine)
+    singles = pd.read_sql(db.session.query(Game).filter(Game.deleted == 0).statement, db.session.bind)
+    doubles = pd.read_sql(db.session.query(DoublesGame).filter(Game.deleted == 0).statement, db.session.bind)
 
-    tz = pytz.timezone('America/New_York')
+    timezone = pytz.timezone('America/New_York')
 
     for frame in [singles, doubles]:
+        frame['timestamp'] = frame['timestamp'].apply(
+            datetime.fromtimestamp, tz=timezone).dt.strftime('%Y-%m-%d %H:%M:%S %Z')
 
-        frame['timestamp'] = frame['timestamp'].apply(datetime.utcfromtimestamp)
-        frame['timestamp'] = frame['timestamp'].apply(datetime.replace, tzinfo=tz)
-        frame['timestamp'] = frame['timestamp'].dt.strftime('%Y-%m-%d %H:%M:%S %Z')
-
-    singles = singles.to_dict('records')
-    doubles = doubles.to_dict('records')
-
-    return render_template('gamelog.html', singles_games=singles, doubles_games=doubles)
+    return render_template('gamelog.html', singles_games=singles.to_dict('records'),
+                           doubles_games=doubles.to_dict('records'))
 
 
 @app.route('/record_match', methods=['GET', 'POST'])
@@ -106,6 +104,7 @@ def record_match():
         record = Game(player_a=form.player_a.data, player_b=form.player_b.data,
                       score_a=form.score_a.data, score_b=form.score_b.data,
                       deleted=0, timestamp=time.time())
+
         db.session.add(record)
         db.session.commit()
 
@@ -121,13 +120,13 @@ def record_match():
 
 @app.route('/record_doubles', methods=['GET', 'POST'])
 def record_doubles():
-    s = '''
+    sql = '''
     select
     alias,
     printf('%s %s', first_name, last_name) as name
     from player
     '''
-    choices = pd.read_sql(s, con=engine)
+    choices = pd.read_sql(sql, con=engine)
     choice_list = sorted([(i['alias'], i['name']) for i in choices.to_dict('records')])
 
     form = DoublesMatchForm(csrf_enabled=False)
@@ -305,8 +304,11 @@ def push_new_doubles_ratings(con=None):
     ratingdf.to_sql('doubles_ratings', con=con, if_exists='replace', index=False)
 
     team_ratingdf = calculate_team_ratings(games)
-    team_ratingdf = (team_ratingdf.reset_index().rename(columns={'index': 'team'})
-                .drop('level_0', axis=1))
+    team_ratingdf = (team_ratingdf
+        .reset_index()
+        .rename(columns={'index': 'team'})
+        .drop('level_0', axis=1)
+        )
 
     team_ratingdf.to_sql('team_doubles_ratings', con=con, if_exists='replace', index=False)
 

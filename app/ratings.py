@@ -1,4 +1,5 @@
 from itertools import combinations
+from collections import namedtuple
 
 import numpy as np
 import pandas as pd
@@ -6,6 +7,37 @@ from trueskill import Rating, rate_1vs1, rate
 from trueskill import TrueSkill
 
 from .utils import remove_whitespace
+from .model import SinglesRatingLog, db
+
+
+def log_rating_event(timestamp, player_a, player_b):
+    'shoves the event and new ratings into a table'
+
+    player_a_record = SinglesRatingLog(
+            timestamp = timestamp,
+            alias=player_a.alias,
+            rating = player_a.Rating.mu,
+            sigma = player_a.Rating.sigma,
+            tau = player_a.Rating.tau,
+            pi = player_a.Rating.pi,
+            trueskill = player_a.Rating.exposure
+        )
+
+    player_b_record = SinglesRatingLog(
+            timestamp = timestamp,
+            alias=player_b.alias,
+            rating = player_b.Rating.mu,
+            sigma = player_b.Rating.sigma,
+            tau = player_b.Rating.tau,
+            pi = player_b.Rating.pi,
+            trueskill = player_b.Rating.exposure
+        )
+
+
+    db.session.add(player_a_record)
+    db.session.add(player_b_record)
+    
+    db.session.commit()
 
 
 def calculate_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
@@ -37,6 +69,13 @@ def calculate_ratings(game_df, rating_object=Rating(), return_type='dataframe'):
 
         ratings[row[1]['player_a']] = player_a
         ratings[row[1]['player_b']] = player_b
+
+        playerTuple = namedtuple('playerTuple', ['alias', 'Rating'])
+
+        a = playerTuple(alias=row[1]['player_a'], Rating=player_a)
+        b = playerTuple(alias=row[1]['player_b'], Rating=player_b)
+
+        log_rating_event(row[1]['timestamp'], a, b)
 
     if return_type == 'dict':
         return ratings

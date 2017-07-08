@@ -40,3 +40,14 @@ class Ratings(db.Model):
     tau = Column(Float, unique=False)
     pi = Column(Float, unique=False)
     trueskill = Column(Float, unique=False)
+
+
+class SinglesRatingLog(db.Model):
+    entry = Column(Integer, primary_key=True)
+    alias = Column(Text, unique=False)
+    timestamp = Column(Integer, unique=False)
+    rating = Column(Float, unique=False)
+    sigma = Column(Float, unique=False)
+    tau = Column(Float, unique=False)
+    pi = Column(Float, unique=False)
+    trueskill = Column(Float, unique=False)

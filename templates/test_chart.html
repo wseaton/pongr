@@ -1,0 +1,12 @@
+{% extends "layout.html" %}
+{% block content %}
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+
+<div id="my-chart"></div>
+<script type="text/javascript">
+  new Highcharts.Chart({{chart|safe}});
+</script>
+
+{% endblock %}
